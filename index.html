@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tablatura Guitarra</title>
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Bebas+Neue&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0a0f;
+    --panel: #111118;
+    --border: #1e1e2e;
+    --string: #2a2a3e;
+    --string-line: #3a3a5e;
+    --fret-num: #e8c84a;
+    --fret-highlight: #e8c84a;
+    --label: #5a5a8a;
+    --label-e: #e85a5a;
+    --label-b: #e88a3a;
+    --label-g: #e8c84a;
+    --label-d: #4ae87a;
+    --label-a: #4aaae8;
+    --label-E: #8a4ae8;
+    --glow: 0 0 8px #e8c84a88;
+    --section-glow: 0 0 20px #e8c84a22;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: #ccc;
+    font-family: 'Share Tech Mono', monospace;
+    min-height: 100vh;
+    padding: 40px 20px;
+    background-image:
+      radial-gradient(ellipse at 20% 20%, #1a1a3a22 0%, transparent 60%),
+      radial-gradient(ellipse at 80% 80%, #2a1a1a22 0%, transparent 60%);
+  }
+
+  header {
+    text-align: center;
+    margin-bottom: 50px;
+  }
+
+  header h1 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(2.5rem, 6vw, 4.5rem);
+    letter-spacing: 0.15em;
+    color: var(--fret-num);
+    text-shadow: 0 0 30px #e8c84a66, 0 0 60px #e8c84a33;
+    line-height: 1;
+  }
+
+  header p {
+    color: var(--label);
+    font-size: 0.8rem;
+    letter-spacing: 0.3em;
+    margin-top: 8px;
+  }
+
+  .sections-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 20px; /* más compacto entre secciones */
+    max-width: 960px;
+    margin: 0 auto;
+  }
+
+  .section {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 20px 24px; /* ligeramente más pequeño */
+    box-shadow: var(--section-glow);
+    position: relative;
+    overflow: hidden;
+    transition: box-shadow 0.3s ease;
+  }
+
+  .section::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--fret-num), transparent);
+    opacity: 0.4;
+  }
+
+  .section:hover {
+    box-shadow: 0 0 30px #e8c84a33;
+  }
+
+  .section-label {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 0.75rem;
+    letter-spacing: 0.4em;
+    color: var(--fret-num);
+    opacity: 0.5;
+    margin-bottom: 20px;
+  }
+
+  .tab-block {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    width: 100%;
+    overflow-x: auto; /* permite scroll en móviles si el contenido es ancho */
+  }
+
+  .string-row {
+    display: flex;
+    align-items: center;
+    height: 28px;
+    position: relative;
+  }
+
+  .string-row:not(:last-child) {
+    border-bottom: 1px solid #1a1a2a;
+  }
+
+  .string-name {
+    width: 24px;
+    font-size: 0.75rem;
+    font-weight: bold;
+    text-align: right;
+    padding-right: 6px;
+    flex-shrink: 0;
+    letter-spacing: 0;
+  }
+
+  .string-name.e-high  { color: var(--label-e); }
+  .string-name.B       { color: var(--label-b); }
+  .string-name.G       { color: var(--label-g); }
+  .string-name.D       { color: var(--label-d); }
+  .string-name.A       { color: var(--label-a); }
+  .string-name.E-low   { color: var(--label-E); }
+
+  .string-line-wrap {
+    flex: 1;
+    position: relative;
+    height: 100%;
+    display: flex;
+    align-items: center;
+  }
+
+  .string-line-bg {
+    position: absolute;
+    top: 50%;
+    left: 0; right: 0;
+    height: 1px;
+    background: var(--string-line);
+    transform: translateY(-50%);
+    opacity: 0.4;
+  }
+
+  .tab-content {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    gap: 0;
+    padding: 0 4px;
+    white-space: nowrap;
+  }
+
+  .tab-char {
+    display: inline-block;
+    width: 16px;
+    text-align: center;
+    font-size: 0.82rem;
+    line-height: 28px;
+    color: #44445a;
+  }
+
+  .tab-char.dash { color: #2a2a42; }
+
+  .tab-char.note {
+    color: var(--fret-num);
+    font-weight: bold;
+    text-shadow: var(--glow);
+    position: relative;
+  }
+
+  .tab-char.note::after {
+    content: '';
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    width: 20px; height: 20px;
+    border-radius: 50%;
+    background: #e8c84a11;
+  }
+
+  .sep {
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--border), transparent);
+    margin: 8px 0;
+  }
+
+  /* Part divider between two tab halves in same section */
+  .inner-gap { height: 16px; }
+
+  @media (max-width: 600px) {
+    body { padding: 20px 10px; }
+    header h1 { font-size: clamp(2rem, 8vw, 3rem); }
+    .sections-grid { gap: 15px; }
+    .section { padding: 12px 8px; }
+    .section-label { font-size: 0.65rem; margin-bottom: 12px; }
+    .string-row { height: 24px; }
+    .tab-char { width: 10px; font-size: 0.65rem; }
+    .string-name { width: 14px; font-size: 0.6rem; padding-right: 4px; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>GUITAR TAB</h1>
+  <p>GUÍA DE EJECUCIÓN</p>
+</header>
+
+<div class="sections-grid">
+
+  <!-- SECTION 1 -->
+  <div class="section">
+    <div class="section-label">SECCIÓN 1</div>
+    <div class="tab-block" id="sec1"></div>
+  </div>
+
+  <!-- SECTION 2 -->
+  <div class="section">
+    <div class="section-label">SECCIÓN 2</div>
+    <div class="tab-block" id="sec2"></div>
+  </div>
+
+  <!-- SECTION 3 -->
+  <div class="section">
+    <div class="section-label">SECCIÓN 3</div>
+    <div class="tab-block" id="sec3"></div>
+  </div>
+
+  <!-- SECTION 4 -->
+  <div class="section">
+    <div class="section-label">SECCIÓN 4</div>
+    <div class="tab-block" id="sec4"></div>
+  </div>
+  
+  <!-- SECTION 5 -->
+  <div class="section">
+    <div class="section-label">SECCIÓN 5</div>
+    <div class="tab-block" id="sec5"></div>
+  </div>
+
+</div>
+
+<script>
+const sections = {
+  sec1: [
+    { name: 'e', cls: 'e-high', content: '--6-6--6-6-6-6-6-------------------------------------------' },
+    { name: 'B', cls: 'B',      content: '------------------6--4-------------------------------------' },
+    { name: 'G', cls: 'G',      content: '-----------------------------------------------------------' },
+    { name: 'D', cls: 'D',      content: '-----------------------------------------------------------' },
+    { name: 'A', cls: 'A',      content: '-----------------------------------------------------------' },
+    { name: 'E', cls: 'E-low',  content: '-----------------------------------------------------------' },
+  ],
+  sec2: [
+    { name: 'e', cls: 'e-high', content: '--5-5--5-5-5-5-5-------------------------------------------' },
+    { name: 'B', cls: 'B',      content: '------------------4--3-------------------------------------' },
+    { name: 'G', cls: 'G',      content: '-----------------------------------------------------------' },
+    { name: 'D', cls: 'D',      content: '-----------------------------------------------------------' },
+    { name: 'A', cls: 'A',      content: '-----------------------------------------------------------' },
+    { name: 'E', cls: 'E-low',  content: '-----------------------------------------------------------' },
+  ],
+  sec3: [
+    { name: 'e', cls: 'e-high', content: '--3-3--3-3-3-----------------------------------------------' },
+    { name: 'B', cls: 'B',      content: '--------------6-6------------------------------------------' },
+    { name: 'G', cls: 'G',      content: '-------------------5--2------------------------------------' },
+    { name: 'D', cls: 'D',      content: '-----------------------------------------------------------' },
+    { name: 'A', cls: 'A',      content: '-----------------------------------------------------------' },
+    { name: 'E', cls: 'E-low',  content: '-----------------------------------------------------------' },
+  ],
+  sec4: [
+    { name: 'e', cls: 'e-high', content: '------------5-6-8-10-8-6-8-6-------------------------------' },
+    { name: 'B', cls: 'B',      content: '--6-6--8-10------------------8-----------------------------' },
+    { name: 'G', cls: 'G',      content: '-----------------------------------------------------------' },
+    { name: 'D', cls: 'D',      content: '-----------------------------------------------------------' },
+    { name: 'A', cls: 'A',      content: '-----------------------------------------------------------' },
+    { name: 'E', cls: 'E-low',  content: '-----------------------------------------------------------' },
+  ],
+  sec5: [
+    { name: 'e', cls: 'e-high', content: '-10-10-10-8-8-8-6-6-6-5-5-5--5-3-3--3---------------------' },
+    { name: 'B', cls: 'B',      content: '--------------------------------------6-6--6-6-8--8-8-10--' },
+    { name: 'G', cls: 'G',      content: '-----------------------------------------------------------' },
+    { name: 'D', cls: 'D',      content: '-----------------------------------------------------------' },
+    { name: 'A', cls: 'A',      content: '-----------------------------------------------------------' },
+    { name: 'E', cls: 'E-low',  content: '-----------------------------------------------------------' },
+  ],
+};
+
+// There's also a closing riff - adding as section 5
+const section5Data = [
+  { name: 'e', cls: 'e-high', content: '--5-5-8-6--------------------------------------------------' },
+  { name: 'B', cls: 'B',      content: '-----------------------------------------------------------' },
+  { name: 'G', cls: 'G',      content: '-----------------------------------------------------------' },
+  { name: 'D', cls: 'D',      content: '-----------------------------------------------------------' },
+  { name: 'A', cls: 'A',      content: '-----------------------------------------------------------' },
+  { name: 'E', cls: 'E-low',  content: '-----------------------------------------------------------' },
+];
+
+// Create section 5 element
+const grid = document.querySelector('.sections-grid');
+const sec5div = document.createElement('div');
+sec5div.className = 'section';
+sec5div.innerHTML = '<div class="section-label">SECCIÓN 6</div><div class="tab-block" id="sec6"></div>';
+grid.appendChild(sec5div);
+
+function renderTab(containerId, strings) {
+  const el = document.getElementById(containerId);
+  if (!el) return;
+
+  strings.forEach(str => {
+    const row = document.createElement('div');
+    row.className = 'string-row';
+
+    const nameEl = document.createElement('div');
+    nameEl.className = `string-name ${str.cls}`;
+    nameEl.textContent = str.name;
+    row.appendChild(nameEl);
+
+    const wrap = document.createElement('div');
+    wrap.className = 'string-line-wrap';
+
+    const lineBg = document.createElement('div');
+    lineBg.className = 'string-line-bg';
+    wrap.appendChild(lineBg);
+
+    const content = document.createElement('div');
+    content.className = 'tab-content';
+
+    // Tokenize: numbers can be multi-digit
+    const tokens = [];
+    let i = 0;
+    const s = str.content;
+    while (i < s.length) {
+      if (s[i] >= '0' && s[i] <= '9') {
+        let num = '';
+        while (i < s.length && s[i] >= '0' && s[i] <= '9') {
+          num += s[i++];
+        }
+        tokens.push({ type: 'note', val: num });
+      } else {
+        tokens.push({ type: 'dash', val: s[i] });
+        i++;
+      }
+    }
+
+    tokens.forEach(tok => {
+      const span = document.createElement('span');
+      if (tok.type === 'note') {
+        span.className = 'tab-char note';
+        // wider for 2-digit
+        if (tok.val.length > 1) span.style.width = (tok.val.length * 10 + 6) + 'px';
+      } else {
+        span.className = 'tab-char dash';
+      }
+      span.textContent = tok.val;
+      content.appendChild(span);
+    });
+
+    wrap.appendChild(content);
+    row.appendChild(wrap);
+    el.appendChild(row);
+  });
+}
+
+// Render all sections
+Object.entries(sections).forEach(([id, data]) => renderTab(id, data));
+renderTab('sec6', section5Data);
+</script>
+</body>
+</html>
