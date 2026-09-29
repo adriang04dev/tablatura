@@ -5,6 +5,7 @@ const songs = [miFortaleza, amigoDeDios];
 const songSelect = document.querySelector('#song-select');
 const songTitle = document.querySelector('#song-title');
 const sectionsGrid = document.querySelector('.sections-grid');
+const selectedSongStorageKey = 'tablatura-selected-song';
 
 function createSection(label) {
   const section = document.createElement('section');
@@ -110,8 +111,14 @@ songs.forEach((song) => {
 
 songSelect.addEventListener('change', () => {
   const selectedSong = songs.find((song) => song.id === songSelect.value);
-  if (selectedSong) renderSong(selectedSong);
+  if (!selectedSong) return;
+
+  localStorage.setItem(selectedSongStorageKey, selectedSong.id);
+  renderSong(selectedSong);
 });
 
-songSelect.value = miFortaleza.id;
-renderSong(miFortaleza);
+const savedSongId = localStorage.getItem(selectedSongStorageKey);
+const initialSong = songs.find((song) => song.id === savedSongId) ?? miFortaleza;
+
+songSelect.value = initialSong.id;
+renderSong(initialSong);
